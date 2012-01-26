@@ -1,0 +1,4 @@
+name = Papertrail
+description = Log searching service
+core = 7.x
+stylesheets[all][] = papertrail.css

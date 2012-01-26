@@ -1,0 +1,44 @@
+#papertrail-head {
+  background-color: #666;
+  color: #fff;
+  font-weight: bold;
+  border: 1px solid #666;
+  float: left;
+  width: 100%;
+  padding: 0 0.25em;
+}
+
+#papertrail-head div:first-child {
+  padding-left: 0.5em;
+}
+
+#papertrail-wrapper {
+  height: 600px;
+  width: 100%;
+  overflow: auto;
+  border: 1px solid #666;
+  clear: both;
+  padding: 0.25em;
+  font-family: "Lucida Console", "Courier New", courier, monospace;
+  font-size: 0.9em;
+}
+
+#papertrail-wrapper .log-line {
+  clear: both;
+  padding: 0.25em 0;
+  border-bottom: 1px solid #ececec;
+  float: left;
+  width: 100%;
+}
+
+#papertrail-head .log-date,
+#papertrail-wrapper .log-line .log-date {
+  width: 135px;
+  float: left;
+  vertical-align: top;
+}
+
+#papertrail-head .log-message,
+#papertrail-wrapper .log-line .log-message {
+  float: left;
+}

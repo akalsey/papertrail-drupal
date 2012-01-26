@@ -1,0 +1,90 @@
+<?php
+// Implements hook_menu
+function papertrail_menu() {
+  $items['admin/config/development/logging/papertrail'] = array(
+    'title' => t('Papertrail'),
+    'description' => t('Configure papertrail log searching'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('papertrail_admin_settings'),
+    'access arguments' => array('administer site configuration'), 
+  );
+  
+  $items['admin/reports/papertrail'] = array(
+    'title' => t('Papertrail'),
+    'description' => t('Papertrail log tail'),
+    'page callback' => 'papertrail_tail',
+    'access arguments' => array('administer site configuration'),
+  );
+
+  $items['papertrail/tail'] = array(
+    'title' => t('Papertrail'),
+    'description' => t('Papertrail ajax handler for tail page'),
+    'page callback' => 'papertrail_tail_ajax',
+    'access arguments' => array('administer site configuration'),
+  );
+
+  return $items;
+}
+
+function papertrail_admin_settings() {
+  $form['papertrail_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Papertrail API Token'),
+    '#default_value' => variable_get('papertrail_key', ''),
+  );
+
+  return system_settings_form($form);
+}
+
+function papertrail_tail_ajax() {
+  print papertrail_tail_data();
+}
+
+function papertrail_tail_data($params= array(), $url = 'https://papertrailapp.com/api/v1/events/search.json') {
+  $tailkey = 'papertrail-max-id-' . md5($url);
+  
+  if (isset($params['#reset']) && $params['#reset'] == true) {
+    unset($_SESSION[$tailkey]);
+    unset($params['#reset']);
+    return;
+  }
+  
+  if (isset($_SESSION[$tailkey])) {
+    $params += array('min_id' => $_SESSION[$tailkey]);
+  }
+  $qs = '';
+  $out = '';
+  
+  foreach ($params as $k => $v) {
+    $qs .= "$k=$v&";
+  }
+  if (!empty($qs)) {
+    $url .= '?' . $qs;
+  }
+  $opts = array('headers' => array('X-Papertrail-Token' => variable_get('papertrail_key', '')));
+  $response = drupal_http_request($url, $opts);
+  if ($response->code == 200) {
+    $log = json_decode($response->data);
+    $_SESSION[$tailkey] = $log->max_id;
+    foreach ($log->events as $event) {
+      $received = date('M j H:i:s', strtotime($event->received_at));
+      $out .= "<div class='log-line {$event->severity}' id='{$event->id}'>\n";
+      $out .= "   <div class='log-date'>$received</div>\n";
+      $out .= "   <div class='log-message'>{$event->message}</div>\n";
+      $out .= "</div>\n";
+    }
+    return $out;
+  } else {
+    return;
+  }
+}
+
+function papertrail_tail() {
+  // reset the min_id tracker.
+  papertrail_tail_data(array('#reset' => true));
+  drupal_add_js('var url = "' . url('papertrail/tail', array('absolute' => TRUE)) . '";', 'inline');
+  drupal_add_js(drupal_get_path('module', 'papertrail') . '/tail.js', array('scope' => 'footer'));  
+  return '<div id="papertrail-wrapper">Ready.</div>';
+}
+
+?>
