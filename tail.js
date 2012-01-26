@@ -1,4 +1,4 @@
-function doUpdate(url) {
+function pdu(url) {
   (function ($) {$.ajax({
     type: "GET", url: url,
     success: function (data) {
@@ -8,14 +8,14 @@ function doUpdate(url) {
           $("#papertrail-wrapper").attr("scrollHeight") - $('#papertrail-wrapper').height() 
            );        
       }
-      setTimeout("doUpdate(url)", 2000);
+      setTimeout("pdu(url)", 2000);
     },
     error: function() {
-      setTimeout("doUpdate(url)", 2000);
+      setTimeout("pdu(url)", 2000);
     }
   });}(jQuery));
 }
 var scrolled = false;
 jQuery("#papertrail-wrapper").scroll(function(){scrolled = true; jQuery("#papertrail-wrapper").queue([]).stop()});
 
-setTimeout("doUpdate(url)", 2000);
+setTimeout("pdu(url)", 2000);
